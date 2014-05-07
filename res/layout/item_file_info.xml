@@ -1,22 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
     android:padding="5dp"
-    android:gravity="center_vertical" >
+    android:descendantFocusability="blocksDescendants" >
     
     <ImageView 
         android:id="@+id/iv_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/icon_folder"
+        android:layout_centerVertical="true"
         android:layout_gravity="center_vertical"/>
+    
+    <CheckBox 
+        android:id="@+id/cb_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="5dp"/>
     
     <RelativeLayout 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingLeft="5dp"
+        android:layout_toLeftOf="@id/cb_item"
+        android:layout_toRightOf="@id/iv_icon"
+        android:layout_centerVertical="true"
         android:gravity="center">
         <TextView
             android:id="@+id/tv_filename"
@@ -45,4 +56,4 @@
     </RelativeLayout>
     
 
-</LinearLayout>
+</RelativeLayout>
