@@ -61,6 +61,8 @@ public class FileListActivity extends Activity implements OnClickListener {
 		fileCategory = (FileCategory) intent.getSerializableExtra("fileCategory");
 		isCategory = intent.getBooleanExtra("isCategory", false);
 		if(fileCategory != null) {
+			btnBack.setTextSize(18.0F);
+			btnBack.setText(fileCategory.getCategoryName());
 			files.addAll(fileCategory.getFiles());
 		} else {
 			currentPath = (File) intent.getSerializableExtra("target_path");
