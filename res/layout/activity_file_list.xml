@@ -37,7 +37,7 @@
         <ListView
 	        android:id="@+id/lv_file"
 	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
+	        android:layout_height="match_parent"
 	        android:background="@android:color/transparent"
 	        android:listSelector="@drawable/bg_company_select"
 			android:fastScrollEnabled="true"

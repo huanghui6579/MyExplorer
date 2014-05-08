@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android.app.Activity;
 import android.content.Context;
@@ -19,7 +21,6 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
@@ -34,9 +35,9 @@ public class MainActivity extends Activity {
 	static final String MIME_MUSIC = "audio/*";
 	static final String MIME_VIDEO = "video/*";
 	
-	static final int TYPE_IMAGE = 1;
-	static final int TYPE_MUSIC = 2;
-	static final int TYPE_VIDEO = 3;
+	public static final int TYPE_IMAGE = 1;
+	public static final int TYPE_MUSIC = 2;
+	public static final int TYPE_VIDEO = 3;
 	
 	private Context mContext;
 	
@@ -82,7 +83,7 @@ public class MainActivity extends Activity {
 		FileInfo.FILE_TYPE_SDCARD, FileInfo.FILE_TYPE_PHONE
 	};
 	
-	static Map<String, Integer> mimeMap = new HashMap<String, Integer>();
+	public static Map<String, Integer> mimeMap = new HashMap<String, Integer>();
 	
 	private boolean isSdcardAvailable = false;
 	
@@ -263,7 +264,7 @@ public class MainActivity extends Activity {
 	 */
 	private int scanFile(File file) {
 		int fileType = 0;
-		if(file.isDirectory() && !file.isHidden()) {
+		if(file.isDirectory() && file.canRead()) {
 			File[] files = file.listFiles(new MyFileFilter());
 			if(files != null) {
 				int subLen = files.length;

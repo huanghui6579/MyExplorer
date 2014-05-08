@@ -2,19 +2,29 @@ package com.example.testfileexplorer;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources.NotFoundException;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.MediaStore.Video.Thumbnails;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,6 +36,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.example.testfileexplorer.FileListActivity.FileAdapter.FileViewHolder;
 
 public class FileListActivity extends Activity implements OnClickListener {
 	private static Map<String, String> mimeMap = null;	//文件类型映射
@@ -117,38 +129,108 @@ public class FileListActivity extends Activity implements OnClickListener {
 		}
 	}
 	
-	private int getResId(File file) {
-		String ext = FileUtil.getFileExtension(file);
-		String mimeType = FileUtil.getMimeType(ext);
-		String extIcon = null;
-		if (StringUtil.isNotBlank(mimeType)) {
-			if (file.exists() && file.isFile()) {
-				extIcon = getMimeMap().get(mimeType);
+	class LoadApkIconTAsk extends AsyncTask<Object, Drawable, Drawable> {
+		FileViewHolder holder;
+
+		public LoadApkIconTAsk(FileViewHolder holder) {
+			super();
+			this.holder = holder;
+		}
+
+		@Override
+		protected Drawable doInBackground(Object... params) {
+			Drawable drawable = FileUtil.getApkIcon((Context)params[0], (String)params[1]);
+			return drawable;
+		}
+		
+		@Override
+		protected void onPostExecute(Drawable result) {
+			if(result != null) {
+				holder.ivIcon.setImageDrawable(result);
 			}
-			if (StringUtil.isBlank(extIcon)) {
-				extIcon = getMimeMap().get(ext);
-			}
-		} else {
-			extIcon = getMimeMap().get(ext);
+			super.onPostExecute(result);
 		}
-		int resId = 0;
-		if (StringUtil.isNotBlank(extIcon)) {
-			resId = getResources().getIdentifier(extIcon, "drawable", getPackageName());
-		}
-		if (resId == 0) {
-			resId = R.drawable.att_commom;
-		}
-		return resId;
 	}
+	
+	class AsyncImageLoader {
+	    public Map<String, SoftReference<Bitmap>> imageCache = new HashMap<String, SoftReference<Bitmap>>();
+	    private ExecutorService executorService = Executors.newFixedThreadPool(5);
+	    private final Handler handler = new Handler();
+	 
+	    /**
+	     *
+	     * @param imageUrl
+	     *            图像url地址
+	     * @param callback
+	     *            回调接口
+	     * @return 返回内存中缓存的图像，第一次加载返回null
+	     */
+	    public Bitmap loadDrawable(final int fileType, final String imageUrl,
+	            final ImageCallback callback) {
+	        // 如果缓存过就从缓存中取出数据
+	        if (imageCache.containsKey(imageUrl)) {
+	            SoftReference<Bitmap> softReference = imageCache.get(imageUrl);
+	            if (softReference.get() != null) {
+	                return softReference.get();
+	            }
+	        }
+	        // 缓存中没有图像，则从网络上取出数据，并将取出的数据缓存到内存中
+	        executorService.submit(new Runnable() {
+	        	@Override
+	            public void run() {
+	                try {
+	                    final Bitmap bitmap = loadImageFromUrl(fileType, imageUrl);
+	 
+	                    imageCache.put(imageUrl, new SoftReference<Bitmap>(
+	                    		bitmap));
+	 
+	                    handler.post(new Runnable() {
+	                    	@Override
+	                        public void run() {
+	                            callback.imageLoaded(bitmap);
+	                        }
+	                    });
+	                } catch (Exception e) {
+	                    throw new RuntimeException(e);
+	                }
+	            }
+	        });
+	        return null;
+	    }
+	 
+	    protected Bitmap loadImageFromUrl(int fileType, String imagePath) {
+	        try {
+	        	Bitmap bitmap = null;
+	        	if(MainActivity.TYPE_IMAGE == fileType) {	//是图片文件
+	        		Drawable drawable = Drawable.createFromPath(imagePath);
+	        		bitmap = ((BitmapDrawable) drawable).getBitmap();
+	        		bitmap = ThumbnailUtils.extractThumbnail(bitmap, 50, 50);
+	        	} else if(MainActivity.TYPE_VIDEO == fileType) {	//是视频文件
+	        		bitmap = ThumbnailUtils.createVideoThumbnail(imagePath, Thumbnails.MINI_KIND);
+	        	}
+	            return bitmap;
+	        } catch (Exception e) {
+	            throw new RuntimeException(e);
+	        }
+	    }
+	}
+	
+	 // 对外界开放的回调接口a
+    interface ImageCallback {
+        // 注意 此方法是用来设置目标对象的图像资源
+        public void imageLoaded(Bitmap bitmap);
+    }
 	
 	class FileAdapter extends BaseAdapter {
 		private Context context;
 		private List<File> list;
+		AsyncImageLoader imageLoader;
 
 		public FileAdapter(Context context, List<File> list) {
 			super();
 			this.context = context;
 			this.list = list;
+			imageLoader = new AsyncImageLoader();
 		}
 
 		@Override
@@ -164,6 +246,47 @@ public class FileListActivity extends Activity implements OnClickListener {
 		@Override
 		public long getItemId(int position) {
 			return position;
+		}
+		
+		private int getResId(File file, int position, final FileViewHolder holder) {
+			String ext = FileUtil.getFileExtension(file);
+			String mimeType = FileUtil.getMimeType(ext);
+			String extIcon = null;
+			if (StringUtil.isNotBlank(mimeType)) {
+				if (file.exists() && file.isFile()) {
+					extIcon = getMimeMap().get(mimeType);
+				}
+				if (StringUtil.isBlank(extIcon)) {
+					extIcon = getMimeMap().get(ext);
+				}
+			} else {
+				extIcon = getMimeMap().get(ext);
+			}
+			int resId = 0;
+			if (StringUtil.isNotBlank(extIcon)) {
+				resId = getResources().getIdentifier(extIcon, "drawable", getPackageName());
+			}
+			if (resId == 0) {
+				resId = R.drawable.att_commom;
+			}
+			Integer mType = MainActivity.mimeMap.get(mimeType);
+			String filepath = file.getAbsolutePath();
+			if(mType != null ) {	
+				if(MainActivity.TYPE_IMAGE == mType || MainActivity.TYPE_VIDEO == mType) {	//是图片或者视频文件
+					imageLoader.loadDrawable(mType, filepath, new ImageCallback() {
+						
+						@Override
+						public void imageLoaded(Bitmap imageBitmap) {
+							if(imageBitmap != null) {
+								holder.ivIcon.setImageBitmap(imageBitmap);
+							}
+						}
+					});
+				}
+			} else if("apk".equals(ext)) {	//是安装包文件
+				new LoadApkIconTAsk(holder).execute(context, filepath);
+			}
+			return resId;
 		}
 
 		@Override
@@ -192,7 +315,7 @@ public class FileListActivity extends Activity implements OnClickListener {
 					holder.tvFileSize.setText("不可读");
 				}
 			} else {	//是文件
-				holder.ivIcon.setImageResource(getResId(file));
+				holder.ivIcon.setImageResource(getResId(file, position, holder));
 				holder.tvFileSize.setText(FileUtil.convertStorage(file.length()));
 			}
 			return convertView;
