@@ -23,8 +23,13 @@ import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.os.Bundle;
+<<<<<<< HEAD
 import android.os.Handler;
 import android.provider.MediaStore.Video.Thumbnails;
+=======
+import android.util.Log;
+import android.util.SparseBooleanArray;
+>>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,14 +37,18 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.testfileexplorer.FileListActivity.FileAdapter.FileViewHolder;
 
 public class FileListActivity extends Activity implements OnClickListener {
+	private static final String TAG = "FileListActivity";
 	private static Map<String, String> mimeMap = null;	//文件类型映射
 	private Context mContext;
 	
@@ -47,6 +56,8 @@ public class FileListActivity extends Activity implements OnClickListener {
 	private Button btnBack;
 	private TextView emptyView;
 	private ProgressBar pbLoading;
+	private Button btnOk;
+	//private CheckBox cbAll;
 	
 	private List<File> files;
 	private FileCategory fileCategory;
@@ -68,6 +79,9 @@ public class FileListActivity extends Activity implements OnClickListener {
 		btnBack = (Button) findViewById(R.id.btn_back);
 		emptyView = (TextView) findViewById(R.id.empty_view);
 		pbLoading = (ProgressBar) findViewById(R.id.pb_loading);
+		btnOk = (Button) findViewById(R.id.btn_ok);
+		btnOk.setOnClickListener(this);
+		//cbAll = (CheckBox) findViewById(R.id.cb_all);
 		
 		Intent intent = getIntent();
 		fileCategory = (FileCategory) intent.getSerializableExtra("fileCategory");
@@ -93,9 +107,22 @@ public class FileListActivity extends Activity implements OnClickListener {
 				File f = files.get(position);
 				if(f.isDirectory() && f.canRead()) {	//是文件夹
 					initChildren(f, false);
+				} else {	//是文件
+					Toast.makeText(mContext, "选择了" + f.toString(), Toast.LENGTH_SHORT).show();
 				}
 			}
 		});
+		
+		/*cbAll.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView,
+					boolean isChecked) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});*/
 	}
 	
 	/**
@@ -224,13 +251,28 @@ public class FileListActivity extends Activity implements OnClickListener {
 	class FileAdapter extends BaseAdapter {
 		private Context context;
 		private List<File> list;
+<<<<<<< HEAD
 		AsyncImageLoader imageLoader;
+=======
+		private SparseBooleanArray checkArray = new SparseBooleanArray();
+		private int checkCount = 0;
+>>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
 
 		public FileAdapter(Context context, List<File> list) {
 			super();
 			this.context = context;
 			this.list = list;
 			imageLoader = new AsyncImageLoader();
+		}
+		
+		public void update() {
+			notifyDataSetChanged();
+			checkArray.clear();
+			checkCount = 0;
+		}
+
+		public SparseBooleanArray getCheckArray() {
+			return checkArray;
 		}
 
 		@Override
@@ -290,7 +332,7 @@ public class FileListActivity extends Activity implements OnClickListener {
 		}
 
 		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
+		public View getView(final int position, View convertView, ViewGroup parent) {
 			FileViewHolder holder;
 			if(convertView == null) {
 				holder = new FileViewHolder();
@@ -300,6 +342,7 @@ public class FileListActivity extends Activity implements OnClickListener {
 				holder.tvFilename = (TextView) convertView.findViewById(R.id.tv_filename);
 				holder.tvFileDate = (TextView) convertView.findViewById(R.id.tv_filedate);
 				holder.tvFileSize = (TextView) convertView.findViewById(R.id.tv_filesize);
+				holder.cbItem = (CheckBox) convertView.findViewById(R.id.cb_item);
 				convertView.setTag(holder);
 			} else {
 				holder = (FileViewHolder) convertView.getTag();
@@ -307,6 +350,30 @@ public class FileListActivity extends Activity implements OnClickListener {
 			File file = list.get(position);
 			holder.tvFilename.setText(file.getName());
 			holder.tvFileDate.setText(StringUtil.parseTime(file.lastModified(), null));
+			holder.cbItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+				
+				@Override
+				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+					checkArray.put(position, isChecked);
+					if(isChecked) {
+						checkCount ++;
+						int total = getCount();
+						if(checkCount > total) {
+							checkCount = total;
+						}
+					} else {
+						checkCount --;
+						if(checkCount < 0) {
+							checkCount = 0;
+						}
+					}
+					if(checkCount > 0) {	//有选中
+						btnOk.setEnabled(true);
+					} else {
+						btnOk.setEnabled(false);
+					}
+				}
+			});
 			if(file.isDirectory()) {	//是文件夹
 				holder.ivIcon.setImageResource(R.drawable.icon_folder);
 				if(file.canRead()) {	//目录可读
@@ -314,9 +381,17 @@ public class FileListActivity extends Activity implements OnClickListener {
 				} else {
 					holder.tvFileSize.setText("不可读");
 				}
+				holder.cbItem.setVisibility(View.GONE);
 			} else {	//是文件
 				holder.ivIcon.setImageResource(getResId(file, position, holder));
 				holder.tvFileSize.setText(FileUtil.convertStorage(file.length()));
+				holder.cbItem.setVisibility(View.VISIBLE);
+			}
+			boolean checked = checkArray.get(position);
+			if(checked) {
+				holder.cbItem.setChecked(true);
+			} else {
+				holder.cbItem.setChecked(false);
 			}
 			return convertView;
 		}
@@ -326,6 +401,7 @@ public class FileListActivity extends Activity implements OnClickListener {
 			TextView tvFilename;
 			TextView tvFileDate;
 			TextView tvFileSize;
+			CheckBox cbItem;
 		}
 	}
 	
@@ -357,7 +433,7 @@ public class FileListActivity extends Activity implements OnClickListener {
 		@Override
 		protected void onPostExecute(Void result) {
 			pbLoading.setVisibility(View.GONE);
-			adapter.notifyDataSetChanged();
+			adapter.update();
 			super.onPostExecute(result);
 		}
 		
@@ -385,7 +461,19 @@ public class FileListActivity extends Activity implements OnClickListener {
 		case R.id.btn_back:	//上一级
 			pathBack();
 			break;
-
+		case R.id.btn_ok:	//确定选择
+			SparseBooleanArray barray = adapter.getCheckArray();
+			List<File> checkList = new ArrayList<File>();
+			int len = barray.size();
+			for(int i = 0; i < len; i++) {
+				int position = barray.keyAt(i);
+				boolean check = barray.get(position, false);
+				if(check) {
+					checkList.add(files.get(position));
+				}
+			}
+			Log.i(TAG, "选择了" + checkList.size() + "个文件" + checkList.toString());
+			break;
 		default:
 			break;
 		}
