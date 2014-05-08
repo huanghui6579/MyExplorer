@@ -3,7 +3,6 @@ package com.example.testfileexplorer;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,13 +22,10 @@ import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.os.Bundle;
-<<<<<<< HEAD
 import android.os.Handler;
 import android.provider.MediaStore.Video.Thumbnails;
-=======
 import android.util.Log;
 import android.util.SparseBooleanArray;
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -251,12 +247,9 @@ public class FileListActivity extends Activity implements OnClickListener {
 	class FileAdapter extends BaseAdapter {
 		private Context context;
 		private List<File> list;
-<<<<<<< HEAD
 		AsyncImageLoader imageLoader;
-=======
 		private SparseBooleanArray checkArray = new SparseBooleanArray();
 		private int checkCount = 0;
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
 
 		public FileAdapter(Context context, List<File> list) {
 			super();

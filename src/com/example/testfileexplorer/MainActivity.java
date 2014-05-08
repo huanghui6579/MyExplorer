@@ -7,11 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-<<<<<<< HEAD
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-=======
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
 
 import android.app.Activity;
 import android.content.Context;
@@ -24,10 +19,6 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-<<<<<<< HEAD
-=======
-import android.webkit.MimeTypeMap;
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
@@ -42,15 +33,9 @@ public class MainActivity extends Activity {
 	static final String MIME_MUSIC = "audio/*";
 	static final String MIME_VIDEO = "video/*";
 	
-<<<<<<< HEAD
 	public static final int TYPE_IMAGE = 1;
 	public static final int TYPE_MUSIC = 2;
 	public static final int TYPE_VIDEO = 3;
-=======
-	static final int TYPE_IMAGE = 1;
-	static final int TYPE_MUSIC = 2;
-	static final int TYPE_VIDEO = 3;
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
 	
 	private Context mContext;
 	
@@ -96,11 +81,7 @@ public class MainActivity extends Activity {
 		FileInfo.FILE_TYPE_SDCARD, FileInfo.FILE_TYPE_PHONE
 	};
 	
-<<<<<<< HEAD
 	public static Map<String, Integer> mimeMap = new HashMap<String, Integer>();
-=======
-	static Map<String, Integer> mimeMap = new HashMap<String, Integer>();
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
 	
 	private boolean isSdcardAvailable = false;
 	
@@ -281,11 +262,7 @@ public class MainActivity extends Activity {
 	 */
 	private int scanFile(File file) {
 		int fileType = 0;
-<<<<<<< HEAD
 		if(file.isDirectory() && file.canRead()) {
-=======
-		if(file.isDirectory() && !file.isHidden()) {
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
 			File[] files = file.listFiles(new MyFileFilter());
 			if(files != null) {
 				int subLen = files.length;
@@ -312,7 +289,6 @@ public class MainActivity extends Activity {
 					fc.setCount(count + 1);
 				}
 			}
-			
 		}
 		return fileType;
 	}
@@ -347,7 +323,6 @@ public class MainActivity extends Activity {
 				return true;
 			}
 		}
-		
 	}
 	
 	/**

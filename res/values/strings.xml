@@ -1,13 +1,7 @@
-<<<<<<< HEAD
 <?xml version="1.0" encoding="utf-8"?>
-=======
-<?xml version="1.0" encoding="utf-8"?>
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
 <resources>
-
     <string name="app_name">TestFileExplorer</string>
     <string name="action_settings">Settings</string>
-<<<<<<< HEAD
     <string name="hello_world">Hello world!</string>
     <string name="file_category_count">(%1$s)</string>
     <string name="folder_children_count">%1$d项</string>
@@ -55,55 +49,6 @@
         <item>7z</item>
         <item>tar</item>
         <item>gz</item>
-=======
-    <string name="hello_world">Hello world!</string>
-    <string name="file_category_count">(%1$s)</string>
-    <string name="folder_children_count">%1$d项</string>
-    <string name="storage_used_info">可用%1$s,共%2$s</string>
-    
-    <string name="empty_file">没有文件</string>
-    
-    <string-array name="file_category">
-        <item>音乐</item>
-        <item>视频</item>
-        <item>图片</item>
-        <item>文档</item>
-        <item>压缩文件</item>
-        <item>安装包</item>
-        <item>SD卡</item>
-        <item>手机存储</item>
-    </string-array>
-    
-    <string-array name="category_document">
-        <item>ppx</item>
-        <item>xls</item>
-        <item>xlsx</item>
-        <item>pdf</item>
-        <item>mobi</item>
-        <item>odp</item>
-        <item>pps</item>
-        <item>rtf</item>
-        <item>ppt</item>
-        <item>pptx</item>
-        <item>txt</item>
-        <item>xla</item>
-        <item>xlc</item>
-        <item>xlsm</item>
-        <item>xlsb</item>
-        <item>fb2</item>
-        <item>epub</item>
-        <item>doc</item>
-        <item>docx</item>
-        <item>chm</item>
-    </string-array>
-    
-    <string-array name="category_archive">
-        <item>zip</item>
-        <item>rar</item>
-        <item>7z</item>
-        <item>tar</item>
-        <item>gz</item>
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
     </string-array>
 
 </resources>

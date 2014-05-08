@@ -1,20 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<<<<<<< HEAD
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:padding="5dp"
-    android:gravity="center_vertical" >
-    
-    <ImageView 
-        android:id="@+id/iv_icon"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:src="@drawable/icon_folder"
-        android:layout_gravity="center_vertical"/>
-    
-=======
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -23,8 +7,8 @@
     
     <ImageView 
         android:id="@+id/iv_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:src="@drawable/icon_folder"
         android:layout_centerVertical="true"
         android:layout_gravity="center_vertical"/>
@@ -37,17 +21,13 @@
         android:layout_centerVertical="true"
         android:layout_marginLeft="5dp"/>
     
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
     <RelativeLayout 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingLeft="5dp"
-<<<<<<< HEAD
-=======
         android:layout_toLeftOf="@id/cb_item"
         android:layout_toRightOf="@id/iv_icon"
         android:layout_centerVertical="true"
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
         android:gravity="center">
         <TextView
             android:id="@+id/tv_filename"
@@ -75,9 +55,4 @@
             android:textColor="#999999"/>
     </RelativeLayout>
     
-
-<<<<<<< HEAD
-</LinearLayout>
-=======
 </RelativeLayout>
->>>>>>> 496f150c7bae039549390dfab31988ed8a2f57b6
