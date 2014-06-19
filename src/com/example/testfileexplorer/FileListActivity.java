@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -41,9 +42,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.testfileexplorer.FileListActivity.FileAdapter.FileViewHolder;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class FileListActivity extends Activity implements OnClickListener {
+	protected ImageLoader imageLoader = ImageLoader.getInstance();
+	
 	private static final String TAG = "FileListActivity";
 	private static Map<String, String> mimeMap = null;	//文件类型映射
 	private Context mContext;
@@ -247,7 +250,7 @@ public class FileListActivity extends Activity implements OnClickListener {
 	class FileAdapter extends BaseAdapter {
 		private Context context;
 		private List<File> list;
-		AsyncImageLoader imageLoader;
+		//AsyncImageLoader imageLoader;
 		private SparseBooleanArray checkArray = new SparseBooleanArray();
 		private int checkCount = 0;
 
@@ -255,7 +258,7 @@ public class FileListActivity extends Activity implements OnClickListener {
 			super();
 			this.context = context;
 			this.list = list;
-			imageLoader = new AsyncImageLoader();
+			//imageLoader = new AsyncImageLoader();
 		}
 		
 		public void update() {
@@ -283,7 +286,7 @@ public class FileListActivity extends Activity implements OnClickListener {
 			return position;
 		}
 		
-		private int getResId(File file, int position, final FileViewHolder holder) {
+		private int setRes(File file, int position, final FileViewHolder holder) {
 			String ext = FileUtil.getFileExtension(file);
 			String mimeType = FileUtil.getMimeType(ext);
 			String extIcon = null;
@@ -307,8 +310,8 @@ public class FileListActivity extends Activity implements OnClickListener {
 			Integer mType = MainActivity.mimeMap.get(mimeType);
 			String filepath = file.getAbsolutePath();
 			if(mType != null ) {	
-				if(MainActivity.TYPE_IMAGE == mType || MainActivity.TYPE_VIDEO == mType) {	//是图片或者视频文件
-					imageLoader.loadDrawable(mType, filepath, new ImageCallback() {
+				if(MainActivity.TYPE_IMAGE == mType) {	//是图片或者视频文件
+					/*imageLoader.loadDrawable(mType, filepath, new ImageCallback() {
 						
 						@Override
 						public void imageLoaded(Bitmap imageBitmap) {
@@ -316,10 +319,15 @@ public class FileListActivity extends Activity implements OnClickListener {
 								holder.ivIcon.setImageBitmap(imageBitmap);
 							}
 						}
-					});
+					});*/
+					imageLoader.displayImage("file://" + filepath, holder.ivIcon);
+				} else if(MainActivity.TYPE_VIDEO == mType) {
+					holder.ivIcon.setImageResource(R.drawable.category_icon_video);
 				}
 			} else if("apk".equals(ext)) {	//是安装包文件
 				new LoadApkIconTAsk(holder).execute(context, filepath);
+			} else {
+				holder.ivIcon.setImageResource(resId);
 			}
 			return resId;
 		}
@@ -376,7 +384,8 @@ public class FileListActivity extends Activity implements OnClickListener {
 				}
 				holder.cbItem.setVisibility(View.GONE);
 			} else {	//是文件
-				holder.ivIcon.setImageResource(getResId(file, position, holder));
+//				holder.ivIcon.setImageResource(getResId(file, position, holder));
+				setRes(file, position, holder);
 				holder.tvFileSize.setText(FileUtil.convertStorage(file.length()));
 				holder.cbItem.setVisibility(View.VISIBLE);
 			}
@@ -389,13 +398,14 @@ public class FileListActivity extends Activity implements OnClickListener {
 			return convertView;
 		}
 		
-		final class FileViewHolder {
-			ImageView ivIcon;
-			TextView tvFilename;
-			TextView tvFileDate;
-			TextView tvFileSize;
-			CheckBox cbItem;
-		}
+	}
+	
+	static class FileViewHolder {
+		ImageView ivIcon;
+		TextView tvFilename;
+		TextView tvFileDate;
+		TextView tvFileSize;
+		CheckBox cbItem;
 	}
 	
 	/**
