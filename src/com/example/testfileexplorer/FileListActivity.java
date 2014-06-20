@@ -43,6 +43,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
 public class FileListActivity extends Activity implements OnClickListener {
 	protected ImageLoader imageLoader = ImageLoader.getInstance();
@@ -98,6 +99,7 @@ public class FileListActivity extends Activity implements OnClickListener {
 		lvFile.setEmptyView(emptyView);
 		
 		btnBack.setOnClickListener(this);
+		lvFile.setOnScrollListener(new PauseOnScrollListener(imageLoader, true, true));
 		lvFile.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
 			@Override
@@ -321,8 +323,8 @@ public class FileListActivity extends Activity implements OnClickListener {
 						}
 					});*/
 					imageLoader.displayImage("file://" + filepath, holder.ivIcon);
-				} else if(MainActivity.TYPE_VIDEO == mType) {
-					holder.ivIcon.setImageResource(R.drawable.category_icon_video);
+				} else {
+					holder.ivIcon.setImageResource(resId);
 				}
 			} else if("apk".equals(ext)) {	//是安装包文件
 				new LoadApkIconTAsk(holder).execute(context, filepath);

@@ -10,6 +10,8 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+import com.nostra13.universalimageloader.core.display.RoundedVignetteBitmapDisplayer;
 import com.nostra13.universalimageloader.utils.StorageUtils;
 
 public class ExplorerApplication extends Application {
@@ -34,7 +36,8 @@ public class ExplorerApplication extends Application {
 				.cacheInMemory(true)
 				.cacheOnDisk(true)
 				.considerExifParams(true)
-				//.bitmapConfig(Bitmap.Config.RGB_565)
+				.displayer(new RoundedBitmapDisplayer(2))
+				.bitmapConfig(Bitmap.Config.RGB_565)
 				.build();
 		
 		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
