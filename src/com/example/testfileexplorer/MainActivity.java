@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android.app.Activity;
 import android.content.Context;
@@ -15,6 +17,8 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,10 +28,11 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	private static final String TAG = "FileScan";
+	
+	private final int MSG_UPDATE_FILE_COUNT = 1;
 	
 	static final String MIME_IMAGE = "image/*";
 	static final String MIME_MUSIC = "audio/*";
@@ -84,6 +89,22 @@ public class MainActivity extends Activity {
 	public static Map<String, Integer> mimeMap = new HashMap<String, Integer>();
 	
 	private boolean isSdcardAvailable = false;
+	
+	Handler handler = new Handler() {
+
+		@Override
+		public void handleMessage(Message msg) {
+			int count = msg.arg1;
+			int type = msg.arg2;
+			for(FileCategory fc : categories) {
+				if(fc.getFiletype() == type) {
+					fc.setCount(count);
+					break;
+				}
+			}
+			categoryAdapter.notifyDataSetChanged();
+		}
+	};
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -178,6 +199,7 @@ public class MainActivity extends Activity {
 				}
 			}).start();
 			File root = Environment.getExternalStorageDirectory();
+//			File root = Environment.getRootDirectory();
 			scanFile(root);
 			return null;
 		}
@@ -191,9 +213,9 @@ public class MainActivity extends Activity {
 					fc.setCount(temp.getCount());
 				}
 			}
-			super.onProgressUpdate(values);
+			categoryAdapter.notifyDataSetChanged();
 		}
-		
+		/*
 		@Override
 		protected void onPostExecute(Void result) {
 			long end = System.currentTimeMillis();
@@ -207,7 +229,7 @@ public class MainActivity extends Activity {
 			}
 			categoryAdapter.notifyDataSetChanged();
 			super.onPostExecute(result);
-		}
+		}*/
 	}
 	
 	/**
@@ -260,23 +282,33 @@ public class MainActivity extends Activity {
 	 * @param file
 	 * @return 返回文件的类型
 	 */
-	private int scanFile(File file) {
-		int fileType = 0;
+	private void scanFile(File file) {
 		if(file.isDirectory() && file.canRead()) {
 			File[] files = file.listFiles(new MyFileFilter());
 			if(files != null) {
 				int subLen = files.length;
 				for(int i = 0; i < subLen; i++) {
-					File f = files[i];
-					fileType = scanFile(f);
+					final File f = files[i];
+					if(FileUtil.isSdcardRoot(f.getParentFile())) {	//上级是SD卡的根目录
+						getThreadPool().execute(new Runnable() {
+							
+							@Override
+							public void run() {
+								scanFile(f);
+							}
+						});
+					} else {
+						scanFile(f);
+					}
 				}
 			}
-		} else if(file.isFile() && !file.isHidden()) {
+		} else if(file.canRead()){
 			String ext = FileUtil.getFileExtension(file);
 			String mimeType = FileUtil.getMimeType(ext);
 			Integer mimevalue = mimeMap.get(mimeType);
 			if(mimevalue == null || mimevalue == 0) {	//把图片、音频、视频过滤掉
 				Set<String> extKeys = extMap.keySet();
+				int fileType = 0;
 				if(extKeys.contains(mimeType)) {	//如果是常用的类型
 					fileType = extMap.get(mimeType);
 				} else if(extKeys.contains(ext)) {
@@ -286,11 +318,20 @@ public class MainActivity extends Activity {
 					FileCategory fc = categorieMap.get(fileType);
 					fc.getFiles().add(file);
 					int count = fc.getCount();
-					fc.setCount(count + 1);
+					count ++;
+					fc.setCount(count);
+					Message msg = handler.obtainMessage();
+					msg.what = MSG_UPDATE_FILE_COUNT;
+					msg.arg1 = count;
+					msg.arg2 = fileType;
+					handler.sendMessage(msg);
 				}
 			}
 		}
-		return fileType;
+	}
+	
+	private ExecutorService getThreadPool() {
+		return Executors.newCachedThreadPool();
 	}
 	
 	class MyFileFilter implements FileFilter {

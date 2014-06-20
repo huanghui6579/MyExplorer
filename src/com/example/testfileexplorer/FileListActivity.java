@@ -439,7 +439,7 @@ public class FileListActivity extends Activity implements OnClickListener {
 		if(isCategory) {	//是分类浏览
 			finish();
 		} else {
-			if(FileUtil.isSdcardRoot(currentPath)) {	//已经是SD卡的根目录了
+			if(FileUtil.isRoot(currentPath)) {	//已经是根目录了
 				finish();
 			} else {
 				//currentPath = currentPath.getParentFile();

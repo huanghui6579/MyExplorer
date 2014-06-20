@@ -197,4 +197,15 @@ public class FileUtil {
     	}
     	return false;
     }
+    
+    public static File getRoot() {
+    	return new File("/");
+    }
+    
+    public static boolean isRoot(File path) {
+    	if(getRoot().getAbsolutePath().equals(path.getAbsolutePath())) {
+    		return true;
+    	}
+    	return false;
+    }
 }
